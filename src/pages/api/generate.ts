@@ -1,13 +1,15 @@
 // #vercel-disable-blocks
 import { ProxyAgent, fetch } from 'undici'
 // #vercel-end
-import { generatePayload, parseOpenAIStream } from '@/utils/openAI'
+import { generatePayload, generatePayloadForHyperleapAI, parseOpenAIStream } from '@/utils/openAI'
 import { verifySignature } from '@/utils/auth'
 import type { APIRoute } from 'astro'
 
 const apiKey = import.meta.env.OPENAI_API_KEY
+const hyperleapApiKey = import.meta.env.HYPERLEAPAI_API_KEY || ''
 const httpsProxy = import.meta.env.HTTPS_PROXY
 const baseUrl = ((import.meta.env.OPENAI_API_BASE_URL) || 'https://api.openai.com').trim().replace(/\/$/, '')
+const baseHyperleapUrl = ((import.meta.env.HYPERLEAPAI_API_BASE_URL) || 'https://api.openai.com').trim().replace(/\/$/, '')
 const sitePassword = import.meta.env.SITE_PASSWORD || ''
 const passList = sitePassword.split(',') || []
 
@@ -21,21 +23,22 @@ export const post: APIRoute = async(context) => {
       },
     }), { status: 400 })
   }
-  if (sitePassword && !(sitePassword === pass || passList.includes(pass))) {
-    return new Response(JSON.stringify({
-      error: {
-        message: 'Invalid password.',
-      },
-    }), { status: 401 })
-  }
-  if (import.meta.env.PROD && !await verifySignature({ t: time, m: messages?.[messages.length - 1]?.content || '' }, sign)) {
-    return new Response(JSON.stringify({
-      error: {
-        message: 'Invalid signature.',
-      },
-    }), { status: 401 })
-  }
+  // if (sitePassword && !(sitePassword === pass || passList.includes(pass))) {
+  //   return new Response(JSON.stringify({
+  //     error: {
+  //       message: 'Invalid password.',
+  //     },
+  //   }), { status: 401 })
+  // }
+  // if (import.meta.env.PROD && !await verifySignature({ t: time, m: messages?.[messages.length - 1]?.content || '' }, sign)) {
+  //   return new Response(JSON.stringify({
+  //     error: {
+  //       message: 'Invalid signature.',
+  //     },
+  //   }), { status: 401 })
+  // }
   const initOptions = generatePayload(apiKey, messages)
+  const initOptionsHyperleap = generatePayloadForHyperleapAI(hyperleapApiKey, messages?.[messages.length - 1]?.content || '')
   // #vercel-disable-blocks
   if (httpsProxy)
     initOptions.dispatcher = new ProxyAgent(httpsProxy)
@@ -43,7 +46,16 @@ export const post: APIRoute = async(context) => {
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
-  const response = await fetch(`${baseUrl}/v1/chat/completions`, initOptions).catch((err: Error) => {
+  // const response = await fetch(`${baseUrl}/v1/chat/completions`, initOptions).catch((err: Error) => {
+  //   console.error(err)
+  //   return new Response(JSON.stringify({
+  //     error: {
+  //       code: err.name,
+  //       message: err.message,
+  //     },
+  //   }), { status: 500 })
+  // }) as Response  
+  const response = await fetch(`${baseHyperleapUrl}/app/conversations/fac0749a-df55-435a-a595-dc8f64f428d3/continue`, initOptionsHyperleap).catch((err: Error) => {
     console.error(err)
     return new Response(JSON.stringify({
       error: {

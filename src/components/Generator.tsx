@@ -83,7 +83,6 @@ export default () => {
     setLoading(true)
     setCurrentAssistantMessage('')
     setCurrentError(null)
-    const storagePassword = localStorage.getItem('pass')
     try {
       const controller = new AbortController()
       setController(controller)
@@ -100,7 +99,6 @@ export default () => {
         body: JSON.stringify({
           messages: requestMessageList,
           time: timestamp,
-          pass: storagePassword,
           sign: await generateSignature({
             t: timestamp,
             m: requestMessageList?.[requestMessageList.length - 1]?.content || '',

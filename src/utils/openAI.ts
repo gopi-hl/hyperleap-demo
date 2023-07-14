@@ -3,6 +3,7 @@ import type { ParsedEvent, ReconnectInterval } from 'eventsource-parser'
 import type { ChatMessage } from '@/types'
 
 export const model = import.meta.env.OPENAI_API_MODEL || 'gpt-3.5-turbo'
+export const hyperleapApiKey = import.meta.env.HYPERLEAPAI_API_KEY || ''
 
 export const generatePayload = (apiKey: string, messages: ChatMessage[]): RequestInit & { dispatcher?: any } => ({
   headers: {
@@ -15,6 +16,17 @@ export const generatePayload = (apiKey: string, messages: ChatMessage[]): Reques
     messages,
     temperature: 0.6,
     stream: true,
+  }),
+})
+
+export const generatePayloadForHyperleapAI = (apiKey: string, message: string): RequestInit & { dispatcher?: any } => ({
+  headers: {
+    'Content-Type': 'application/json',
+    'x-hl-api-key': `${hyperleapApiKey}`,
+  },
+  method: 'PATCH',
+  body: JSON.stringify({
+    message,
   }),
 })
 
