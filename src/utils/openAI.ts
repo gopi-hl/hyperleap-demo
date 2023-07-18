@@ -18,6 +18,39 @@ export const generatePayload = (apiKey: string, messages: ChatMessage[]): Reques
     stream: true,
   }),
 })
+// Post request for hyperleap AI
+
+// export const generateConvoId = async() => {
+//   const response = await fetch('https://api.hyperleap.ai/app/conversations', {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'x-hl-api-key': `${hyperleapApiKey}`,
+//     },
+//     body: JSON.stringify({}),
+//   })
+
+//   return response.json()
+// }
+export const generateConvoId = async() => {
+  try {
+    const response = await fetch('https://api.hyperleap.ai/app/conversations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-hl-api-key': hyperleapApiKey,
+      },
+      body: JSON.stringify({}),
+    })
+
+    if (!response.ok)
+      throw new Error(`Request failed with status ${response.status}`)
+    return response.json()
+  } catch (error) {
+    console.error('Error making POST request:', error)
+    throw error
+  }
+}
 
 export const generatePayloadForHyperleapAI = (apiKey: string, message: string): RequestInit & { dispatcher?: any } => ({
   headers: {

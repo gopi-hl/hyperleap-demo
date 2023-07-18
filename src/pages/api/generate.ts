@@ -2,16 +2,16 @@
 import { ProxyAgent, fetch } from 'undici'
 // #vercel-end
 import { generatePayload, generatePayloadForHyperleapAI, parseOpenAIStream } from '@/utils/openAI'
-import { verifySignature } from '@/utils/auth'
 import type { APIRoute } from 'astro'
+// import { error } from 'astro/dist/core/logger/core'
 
 const apiKey = import.meta.env.OPENAI_API_KEY
 const hyperleapApiKey = import.meta.env.HYPERLEAPAI_API_KEY || ''
 const httpsProxy = import.meta.env.HTTPS_PROXY
-const baseUrl = ((import.meta.env.OPENAI_API_BASE_URL) || 'https://api.openai.com').trim().replace(/\/$/, '')
+// const baseUrl = ((import.meta.env.OPENAI_API_BASE_URL) || 'https://api.openai.com').trim().replace(/\/$/, '')
 const baseHyperleapUrl = ((import.meta.env.HYPERLEAPAI_API_BASE_URL) || 'https://api.openai.com').trim().replace(/\/$/, '')
-const sitePassword = import.meta.env.SITE_PASSWORD || ''
-const passList = sitePassword.split(',') || []
+// const sitePassword = import.meta.env.SITE_PASSWORD || ''
+// const passList = sitePassword.split(',') || []
 
 export const post: APIRoute = async(context) => {
   const body = await context.request.json()
@@ -54,8 +54,8 @@ export const post: APIRoute = async(context) => {
   //       message: err.message,
   //     },
   //   }), { status: 500 })
-  // }) as Response  
-  const response = await fetch(`${baseHyperleapUrl}/app/conversations/fac0749a-df55-435a-a595-dc8f64f428d3/continue`, initOptionsHyperleap).catch((err: Error) => {
+  // }) as Response
+  const response = await fetch(`${baseHyperleapUrl}/app/conversations/9f0c5412-b042-4d85-b079-abceaa5a8d4f/continue`, initOptionsHyperleap).catch((err: Error) => {
     console.error(err)
     return new Response(JSON.stringify({
       error: {
