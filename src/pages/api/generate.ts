@@ -1,5 +1,6 @@
 // #vercel-disable-blocks
 import { ProxyAgent, fetch } from 'undici'
+import { currentConversationId, generateConvoId } from '@/utils/openAI' // currentConversationId
 // #vercel-end
 import { generatePayload, generatePayloadForHyperleapAI, parseOpenAIStream } from '@/utils/openAI'
 import type { APIRoute } from 'astro'
@@ -23,6 +24,9 @@ export const post: APIRoute = async(context) => {
       },
     }), { status: 400 })
   }
+  await generateConvoId()
+  // Get the current conversationId from the variable
+  // const convoId = currentConversationId
   // if (sitePassword && !(sitePassword === pass || passList.includes(pass))) {
   //   return new Response(JSON.stringify({
   //     error: {
@@ -37,6 +41,7 @@ export const post: APIRoute = async(context) => {
   //     },
   //   }), { status: 401 })
   // }
+  const convoId = localStorage.getItem('conversationId') || currentConversationId
   const initOptions = generatePayload(apiKey, messages)
   const initOptionsHyperleap = generatePayloadForHyperleapAI(hyperleapApiKey, messages?.[messages.length - 1]?.content || '')
   // #vercel-disable-blocks
@@ -55,7 +60,7 @@ export const post: APIRoute = async(context) => {
   //     },
   //   }), { status: 500 })
   // }) as Response
-  const response = await fetch(`${baseHyperleapUrl}/app/conversations/9f0c5412-b042-4d85-b079-abceaa5a8d4f/continue`, initOptionsHyperleap).catch((err: Error) => {
+  const response = await fetch(`${baseHyperleapUrl}/app/conversations/${convoId}/continue`, initOptionsHyperleap).catch((err: Error) => {
     console.error(err)
     return new Response(JSON.stringify({
       error: {

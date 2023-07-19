@@ -4,6 +4,9 @@ import type { ChatMessage } from '@/types'
 
 export const model = import.meta.env.OPENAI_API_MODEL || 'gpt-3.5-turbo'
 export const hyperleapApiKey = import.meta.env.HYPERLEAPAI_API_KEY || ''
+// let currentConversationId = null
+
+const currentConversationId = null
 
 export const generatePayload = (apiKey: string, messages: ChatMessage[]): RequestInit & { dispatcher?: any } => ({
   headers: {
@@ -18,33 +21,21 @@ export const generatePayload = (apiKey: string, messages: ChatMessage[]): Reques
     stream: true,
   }),
 })
-// Post request for hyperleap AI
-
-// export const generateConvoId = async() => {
-//   const response = await fetch('https://api.hyperleap.ai/app/conversations', {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'x-hl-api-key': `${hyperleapApiKey}`,
-//     },
-//     body: JSON.stringify({}),
-//   })
-
-//   return response.json()
-// }
 export const generateConvoId = async() => {
   try {
     const response = await fetch('https://api.hyperleap.ai/app/conversations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-hl-api-key': hyperleapApiKey,
+        'x-hl-api-key': '',
       },
       body: JSON.stringify({}),
     })
 
     if (!response.ok)
       throw new Error(`Request failed with status ${response.status}`)
+    // const responseData = await response.json()
+    // currentConversationId = responseData.conversationId
     return response.json()
   } catch (error) {
     console.error('Error making POST request:', error)
@@ -110,3 +101,4 @@ export const parseOpenAIStream = (rawResponse: Response) => {
 
   return new Response(stream)
 }
+export { currentConversationId }

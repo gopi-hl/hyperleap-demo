@@ -127,6 +127,7 @@ export default (props: Props) => {
     try {
       const responseData = await generateConvoId()
       console.log(responseData)// Print the response data to the console
+      localStorage.setItem('conversationId', responseData.conversationId)
     } catch (error) {
       console.error('Error making POST request:', error)
     }
