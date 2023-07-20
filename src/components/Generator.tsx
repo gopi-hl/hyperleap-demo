@@ -5,13 +5,14 @@ import IconClear from './icons/Clear'
 import MessageItem from './MessageItem'
 import SystemRoleSettings from './SystemRoleSettings'
 import ErrorMessageItem from './ErrorMessageItem'
-import type { ChatMessage, ErrorMessage } from '@/types'
+import type { ChatMessage, ErrorMessage, HyperleapMessage } from '@/types'
 
 export default () => {
   let inputRef: HTMLTextAreaElement
   const [currentSystemRoleSettings, setCurrentSystemRoleSettings] = createSignal('')
   const [systemRoleEditing, setSystemRoleEditing] = createSignal(false)
   const [messageList, setMessageList] = createSignal<ChatMessage[]>([])
+  const [userMessage, setUserMessage] = createSignal<HyperleapMessage>()
   const [currentError, setCurrentError] = createSignal<ErrorMessage>()
   const [currentAssistantMessage, setCurrentAssistantMessage] = createSignal('')
   const [loading, setLoading] = createSignal(false)
@@ -30,9 +31,6 @@ export default () => {
     })
 
     try {
-      if (sessionStorage.getItem('messageList'))
-        setMessageList(JSON.parse(sessionStorage.getItem('messageList')))
-
       if (sessionStorage.getItem('systemRoleSettings'))
         setCurrentSystemRoleSettings(sessionStorage.getItem('systemRoleSettings'))
 
@@ -60,13 +58,16 @@ export default () => {
       return
 
     inputRef.value = ''
-    setMessageList([
-      ...messageList(),
-      {
-        role: 'user',
-        content: inputValue,
-      },
-    ])
+    setUserMessage({
+      message: inputValue,
+    })
+    // setMessageList([
+    //   ...messageList(),
+    //   {
+    //     role: 'user',
+    //     content: inputValue,
+    //   },
+    // ])
     requestWithLatestMessage()
     instantToBottom()
   }
@@ -97,18 +98,18 @@ export default () => {
       const response = await fetch('/api/generate', {
         method: 'POST',
         body: JSON.stringify({
-          messages: requestMessageList,
+          message: userMessage,
           time: timestamp,
           sign: await generateSignature({
             t: timestamp,
-            m: requestMessageList?.[requestMessageList.length - 1]?.content || '',
+            m: userMessage?.[userMessage.length - 1]?.content || '',
           }),
         }),
         signal: controller.signal,
       })
       if (!response.ok) {
         const error = await response.json()
-        console.error(error.error)
+        console.error(error.erro)
         setCurrentError(error.error)
         throw new Error('Request failed')
       }
@@ -116,24 +117,24 @@ export default () => {
       if (!data)
         throw new Error('No data')
 
-      const reader = data.getReader()
-      const decoder = new TextDecoder('utf-8')
-      let done = false
+      // const reader = data.getReader()
+      // const decoder = new TextDecoder('utf-8')
+      // let done = false
 
-      while (!done) {
-        const { value, done: readerDone } = await reader.read()
-        if (value) {
-          const char = decoder.decode(value)
-          if (char === '\n' && currentAssistantMessage().endsWith('\n'))
-            continue
+      // while (!done) {
+      //   const { value, done: readerDone } = await reader.read()
+      //   if (value) {
+      //     const char = decoder.decode(value)
+      //     if (char === '\n' && currentAssistantMessage().endsWith('\n'))
+      //       continue
 
-          if (char)
-            setCurrentAssistantMessage(currentAssistantMessage() + char)
+      //     if (char)
+      //       setCurrentAssistantMessage(currentAssistantMessage() + char)
 
-          isStick() && instantToBottom()
-        }
-        done = readerDone
-      }
+      //     isStick() && instantToBottom()
+      //   }
+      //   done = readerDone
+      // }
     } catch (e) {
       console.error(e)
       setLoading(false)

@@ -7,3 +7,7 @@ export interface ErrorMessage {
   code: string
   message: string
 }
+
+export interface HyperleapMessage {
+  message: string
+}
